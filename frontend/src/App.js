@@ -1,15 +1,13 @@
 import * as React from 'react';
 import { Platform, StatusBar, StyleSheet, View } from 'react-native';
-import { SplashScreen } from 'expo';
+import { registerRootComponent, SplashScreen } from 'expo';
 import { Ionicons } from '@expo/vector-icons';
 import { NavigationContainer } from '@react-navigation/native';
-
-import AuthEnforcedNavigator from './navigation/AuthEnforcedNavigator';
-
+import AuthEnforcedNavigator from './AuthEnforcedNavigator';
 import { Provider } from 'react-redux'
-import store from './redux/store'
+import store from './store'
 
-export default function App(props) {
+const App = (props) => {
   const [isLoadingComplete, setLoadingComplete] = React.useState(false);
   const [initialNavigationState, setInitialNavigationState] = React.useState();
   const containerRef = React.useRef();
@@ -53,3 +51,5 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
 });
+
+registerRootComponent(App)

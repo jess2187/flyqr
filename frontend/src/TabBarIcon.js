@@ -1,6 +1,6 @@
 import React from 'react'
 import { Ionicons, FontAwesome } from '@expo/vector-icons'
-import Colors from '../constants/Colors'
+import Colors from './colors'
 
 const TabBarIcon = (props) => {
   const component = props.fontAwesome ? FontAwesome : Ionicons

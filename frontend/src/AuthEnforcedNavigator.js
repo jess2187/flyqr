@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { createStackNavigator } from '@react-navigation/stack';
-import LoginAndRegistrationScreen from '../screens/LoginAndRegistrationScreen'
+import LoginAndRegistrationScreen from './screens/LoginAndRegistrationScreen'
 import BottomTabNavigator from './BottomTabNavigator'
 
 const Stack = createStackNavigator()

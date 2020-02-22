@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import TabBarIcon from '../components/TabBarIcon';
-import DashboardScreen from '../screens/DashboardScreen';
-import NewCampaignScreen from '../screens/NewCampaignScreen';
-import UserAccountScreen from '../screens/UserAccountScreen';
+import TabBarIcon from './TabBarIcon';
+import DashboardScreen from './screens/DashboardScreen';
+import NewCampaignScreen from './screens/NewCampaignScreen';
+import UserAccountScreen from './screens/UserAccountScreen';
 
 const BottomTab = createBottomTabNavigator();
 const INITIAL_ROUTE_NAME = 'Dashboard';
