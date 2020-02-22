@@ -29,16 +29,21 @@ def orgs():
 #
 @app.route('/auth/register', methods = ['POST'])
 def register_org():
+    email = ""
+    password = ""
     # TODO
 
 @app.route('/auth/login', methods = ['POST'])
 def login_org():
+    email = ""
+    password = ""
     # TODO
 
 @app.route('/auth/logout', methods = ['POST'])
 def logout_org():
+    token = ""
     #TODO
-    
+
 #
 # Analytics
 #
