@@ -1,11 +1,12 @@
 import * as React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import TabBarIcon from '../components/TabBarIcon';
-import HomeScreen from '../screens/HomeScreen';
-import LinksScreen from '../screens/LinksScreen';
+import DashboardScreen from '../screens/DashboardScreen';
+import NewCampaignScreen from '../screens/NewCampaignScreen';
+import UserAccountScreen from '../screens/UserAccountScreen';
 
 const BottomTab = createBottomTabNavigator();
-const INITIAL_ROUTE_NAME = 'Home';
+const INITIAL_ROUTE_NAME = 'Dashboard';
 
 export default function BottomTabNavigator({ navigation, route }) {
   // Set the header title on the parent stack navigator depending on the
@@ -14,21 +15,30 @@ export default function BottomTabNavigator({ navigation, route }) {
   navigation.setOptions({ headerTitle: getHeaderTitle(route) });
 
   return (
-    <BottomTab.Navigator initialRouteName={INITIAL_ROUTE_NAME}>
+    <BottomTab.Navigator initialRouteName={INITIAL_ROUTE_NAME}
+                         tabBarOptions={{showLabel: false}}>
       <BottomTab.Screen
-        name="Home"
-        component={HomeScreen}
+        name='Dashboard'
+        component={DashboardScreen}
         options={{
-          title: 'Get Started',
-          tabBarIcon: ({ focused }) => <TabBarIcon focused={focused} name="md-code-working" />,
+          title: 'Dashboard',
+          tabBarIcon: ({ focused }) => <TabBarIcon focused={focused} fontAwesome={true} name="align-left" />,
         }}
       />
       <BottomTab.Screen
-        name="Links"
-        component={LinksScreen}
+        name='New Campaign'
+        component={NewCampaignScreen}
         options={{
-          title: 'Resources',
-          tabBarIcon: ({ focused }) => <TabBarIcon focused={focused} name="md-book" />,
+          title: 'New Campaign',
+          tabBarIcon: ({ focused }) => <TabBarIcon focused={focused} name="md-add-circle" />,
+        }}
+      />
+      <BottomTab.Screen
+        name='Account'
+        component={UserAccountScreen}
+        options={{
+          title: 'Account',
+          tabBarIcon: ({ focused }) => <TabBarIcon focused={focused} name="md-person" />,
         }}
       />
     </BottomTab.Navigator>
