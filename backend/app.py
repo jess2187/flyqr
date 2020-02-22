@@ -3,6 +3,11 @@ from flask_mysqldb import MySQL
 import config
 
 app = Flask(__name__)
+
+app.config['MYSQL_HOST'] = config.host
+app.config['MYSQL_USER'] = config.user
+app.config['MYSQL_PASSWORD'] = config.passwd
+app.config['MYSQL_DB'] = config.db
 mysql = MySQL(app)
 
 @app.route('/ping')
@@ -12,17 +17,13 @@ def ping():
 
 @app.route('/orgs')
 def orgs():
-    cur, conn = getDBConnection()
+    cur = mysql.connection.cursor()
     cur.execute("SELECT * FROM mysql.orgs")
     rv = cur.fetchall()
+    cur.close()
     return str(rv)
 
-def getDBConnection():
-    conn = mysql.connect(host=config.host,
-                        user = config.user,
-                        passwd = config.passwd,
-                        db = config.db)
-    return conn.cursor(), conn
+
     
 
 if __name__ == '__main__':
