@@ -1,3 +1,6 @@
 Flask==1.1.0
 Flask-JSON
 flask-mysqldb
+Flask-API
+Flask-Bcrypt
+celery

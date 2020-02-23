@@ -8,7 +8,7 @@ RUN ls /app
 
 WORKDIR /app
 
-EXPOSE 5000
+EXPOSE 5000 6379
 
 RUN pip3 install -r requirements.txt
 
