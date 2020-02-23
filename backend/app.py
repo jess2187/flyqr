@@ -5,6 +5,7 @@ import config
 from objects import gen_organization, gen_campaign, gen_flyer
 from SqlHelper import SqlHelper
 from AuthUtils import AuthUtils
+from Analytics import Analytics
 from flask_bcrypt import Bcrypt
 import response_utils as Resp
 
@@ -23,6 +24,9 @@ celery.conf.update(app.config)
 sql = SqlHelper(app)
 bcrypt = Bcrypt(app)
 auth = AuthUtils(sql, bcrypt)
+analytics = Analytics(sql)
+
+URL_INTO_EXPO_APP = 'exp://exp.host/@evanram/flyqr?code=%s'
 
 @app.route('/ping')
 def ping():
@@ -54,7 +58,7 @@ def register_org():
 @app.route('/auth/login', methods = ['POST'])
 def login_org():
     req_data = request.values
-    email = req_data['email']
+    email = req_data['email'].lower()
     password = req_data['password']
 
     token = auth.checkUser(email, password)
@@ -82,16 +86,19 @@ def logout_org(): # does not logout everywhere
 # Analytics
 #
 
-@app.route('/x/<flyer_code>', methods = ['GET'])
-def on_qr_code_scan(flyer_code):
-     
+@app.route('/x/<code>', methods = ['GET'])
+def on_qr_code_scan(code):
+    flyer = analytics.get_flyer_from_code(code)
+    
+    if not flyer.is_registered():
+        # Temp redirect into mobile app, so user can register it
+        return redirect(URL_INTO_EXPO_APP % code, code=307)
 
-    q = 'update Flyer set hits = hits + 1 where code=%s'
-    vs = (flyer_code,)
-    sql.query(q, vs)
+    flyer.incr_hits()
+    loc = flyer.get_redirect_url()
 
-    # TODO we need multiple redirects
-    return redirect('http://example.com', code=301)
+    # Permanent redirect to campaign's url
+    return redirect(loc, code=301)
 
 #
 # Tags
@@ -120,14 +127,23 @@ def get_org_tags():
 
 @app.route('/campaigns/new', methods = ['POST'])
 def add_campaign():
-    token = request.args.get('token')
-    payload = request.args.get('payload')
-    qr_horiz = request.args.get('qr_horiz')
-    qr_vert = request.args.get('qr_vert')
-    width = request.args.get('width')
-    height = request.args.get('height')
-    camp_name = request.args.get('camp_name')
-    dest_url = request.args.get('dest_url')
+    req_data = request.values
+    token = req_data['token'] # string
+    payload = req_data['payload'] # base64 encoded
+    qr_horiz = req_data['qr_horiz'] # float
+    qr_vert = req_data['qr_vert'] # float
+    width = req_data['width'] # float
+    height = req_data['height'] # float
+    camp_name = req_data['camp_name'] # string
+    dest_url = req_data['dest_url'] # string
+
+    org_id = auth.getOrgIdFromToken(token) 
+
+    if org_id is None:
+        return Resp.forbidden()
+
+    
+
     print("Received: " + token)
 
 @app.route('/campaigns/list', methods = ['GET'])

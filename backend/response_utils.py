@@ -13,5 +13,8 @@ def okNoContent():
 def unauthorized():
     return '', status.HTTP_401_UNAUTHORIZED
 
+def forbidden():
+    return '', status.HTTP_403_FORBIDDEN
+
 def heresYourToken(token):
     return jsonify({'token':token}), status.HTTP_200_OK
