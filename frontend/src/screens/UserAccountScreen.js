@@ -3,13 +3,66 @@ import { connect } from 'react-redux'
 import {
   SafeAreaView,
   View,
-  Text
+  Text,
+  StyleSheet,
+  Button
 } from 'react-native'
 
 const UserAccountScreen = (props) => (
-  <SafeAreaView>
-    <Text>This is the user account screen!!</Text>
+  <SafeAreaView style={styles.container}>
+    <View style ={{alignItems: 'flex-end', paddingRight:10}}> 
+    <Button
+          title="Logout"
+          style = {{paddingRight: 15, alignSelf: 'flex-end', backgroundColor:'blue'}}
+          // onPress={() => Alert.alert('Simple Button pressed')}
+        />
+    </View>
+    <View style={styles.info}>
+      <Text style={{fontSize: 40, paddingBottom: 20, alignSelf: 'center',}}>Organization Info</Text>
+
+      <Text style={{fontSize: 20, color: 'gray'}}>Organization Name</Text>
+      <Text style={{fontSize: 25, paddingBottom: 10}}>CU Game Dev Club</Text>
+
+      <Text style={{fontSize: 20, color: 'gray'}}>Organization Email</Text>
+      <Text style={{fontSize: 25, paddingBottom: 10}}>cugamedev@colorado.edu</Text>
+
+      <Text style={{fontSize: 20, color: 'gray'}}>Number of Campaigns</Text>
+      <Text style={{fontSize: 25, paddingBottom: 10}}>5</Text>
+
+      <Text style={{fontSize: 20, color: 'gray'}}>Number of Total Scans</Text>
+      <Text style={{fontSize: 25, paddingBottom: 10}}>62</Text>
+    </View>
+    
   </SafeAreaView>
 )
 
 export default connect()(UserAccountScreen)
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    // alignItems: 'center',
+    //justifyContent: 'center'
+  },
+  info: {
+
+    // marginLeft: 5,
+    // marginLeft: 5,
+    // width: 300,
+    alignSelf: 'center',
+    paddingTop:100, 
+    // backgroundColor: 'powderblue', 
+    // borderRadius: 6, 
+    // alignItems: 'center',
+    
+
+  },
+  cardContent: {
+    //  width: 300, 
+    //  height: 650,
+    // backgroundColor: 'blue'
+    // padding: 50, 
+    // alignItems: 'center',
+  }
+});
