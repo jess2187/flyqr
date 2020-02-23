@@ -1,8 +1,3 @@
-
-CREATE DATABASE `db_dev`;
-
-USE `db_dev` ;
-
 -- -----------------------------------------------------
 -- Table `Organizations`
 -- -----------------------------------------------------
@@ -12,7 +7,7 @@ CREATE TABLE IF NOT EXISTS `Organizations` (
   `org_id` INT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(100) NOT NULL,
   `email` VARCHAR(100) NOT NULL,
-  `Password` VARCHAR(200) NOT NULL,
+  `password` VARCHAR(200) NOT NULL,
   PRIMARY KEY (`org_id`))
 ENGINE = InnoDB;
 
