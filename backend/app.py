@@ -1,8 +1,12 @@
-from flask import Flask, jsonify, request
-from flask_mysqldb import MySQL
+from flask import Flask, jsonify, request, redirect
+from flask_api import status
 from celery import Celery
 import config
 from objects import gen_organization, gen_campaign, gen_flyer
+from SqlHelper import SqlHelper
+from AuthUtils import AuthUtils
+from flask_bcrypt import Bcrypt
+import response_utils as Resp
 
 app = Flask(__name__)
 
@@ -16,54 +20,78 @@ app.config['CELERY_RESULT_BACKEND'] = config.CELERY_RESULT_BACKEND
 celery = Celery(app.name, broker=app.config["CELERY_BROKER_URL"])
 celery.conf.update(app.config)
 
-mysql = MySQL(app)
+sql = SqlHelper(app)
+bcrypt = Bcrypt(app)
+auth = AuthUtils(sql, bcrypt)
 
 @app.route('/ping')
 def ping():
     return "pong"
 
-
-@app.route('/orgs', methods = ['GET'])
+@app.route('/tables', methods = ['GET'])
 def orgs():
-    cur = mysql.connection.cursor()
-    cur.execute("show tables;")
-    rv = cur.fetchall()
-    cur.close()
-    return jsonify(rv)
+    rv = sql.execute('show tables;')
+    return Resp.okJson(rv)
 
 #
 # Authentication
 #
+
 @app.route('/auth/register', methods = ['POST'])
 def register_org():
-    req_data = request.get_json()
-    email = req_data['email']
+    req_data = request.values
+    name = req_data['name']
+    email = req_data['email'].lower()
     password = req_data['password']
-    # TODO
+
+    if auth.accountExists(email):
+        return Resp.conflictAccountExists()
+
+    auth.createUser(name, email, password)
+
+    return Resp.okNoContent()
 
 @app.route('/auth/login', methods = ['POST'])
 def login_org():
-    req_data = request.get_json()
+    req_data = request.values
     email = req_data['email']
     password = req_data['password']
-    print(email, password)
-    # TODO
+
+    token = auth.checkUser(email, password)
+
+    if not token:
+        return Resp.unauthorized()
+
+    return Resp.heresYourToken(token)
 
 @app.route('/auth/logout', methods = ['POST'])
-def logout_org():
-    req_data = request.get_json()
+def logout_org(): # does not logout everywhere
+    req_data = request.values
     token = req_data['token']
-    #TODO
+    
+    org_id = auth.getOrdIdFromToken(token)
+
+    if org_id is None:
+        return Resp.unauthorized()
+
+    auth.deleteToken(token)
+
+    return Resp.okNoContent()
 
 #
 # Analytics
 #
 
 @app.route('/x/<flyer_code>', methods = ['GET'])
-def addHit(flyer_code):
-    hit = 1
-    # TODO add hit to DB
-    # TODO redirect
+def on_qr_code_scan(flyer_code):
+     
+
+    q = 'update Flyer set hits = hits + 1 where code=%s'
+    vs = (flyer_code,)
+    sql.query(q, vs)
+
+    # TODO we need multiple redirects
+    return redirect('http://example.com', code=301)
 
 #
 # Tags
@@ -128,7 +156,7 @@ def get_campaign_flyers():
 
 #
 # Jobs
-# 
+#
 
 @app.route('/jobs/new', methods = ['POST'])
 def add_pdf_gen():
