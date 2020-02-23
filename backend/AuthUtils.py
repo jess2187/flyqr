@@ -34,10 +34,12 @@ class AuthUtils:
     def getOrgIdFromToken(self, token):
         q = 'select (org_id) from AuthTokens where token=%s;'
         vs = (token,)
-        resp = self.sql.json(q, vs)
+        resp = self.sql.firstOrNone(q, vs)
 
-        # TODO need to extract the org_id out of this...
-        return None # or the org id
+        if not resp:
+            return None
+
+        return resp
 
     def deleteToken(self, token):
         q = 'delete from AuthTokens where token=%s;'

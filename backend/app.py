@@ -106,30 +106,59 @@ def on_qr_code_scan(code):
 
 @app.route('/tags/list', methods = ['GET'])
 def list_tags():
-    tags = sql.executeGetColumn("select name from Tags;")
+    query = request.values['query'] if 'query' in request.values else ''
+    tags = sql.executeGetColumn("select name from Tags where name like %s limit 50;", ['%'+query+'%'])
     return Resp.heresYourTags(tags)
 
 @app.route('/tags/add', methods = ['POST'])
 def add_tag():
-    # TODO get vars from POST
-    token = ""
-    tag = ""
-    # TODO insert tag into DB
+    req_data = request.values
+    token = req_data['token']
+    tag = req_data['tag']
+
+    org_id = auth.getOrgIdFromToken(token)
+
+    if org_id is None:
+        return Resp.unauthorized()
+
+    tag_exists = bool(sql.count('select count(*) from Tags where name=%s;', [tag]))
+
+    if not tag_exists:
+        rv = sql.query('insert into Tags (name) values (%s);', [tag])
+   
+    tag_id = sql.firstOrNone('select (tag_id) from Tags where name=%s;', [tag])
+
+    if not tag_id:
+        raise 'wat'
+
+    assoc_exists = bool(sql.count('select count(*) from Tags2Orgs where org_id=%s and tag_id=%s;', [org_id, tag_id]))
+
+    if not assoc_exists:
+        sql.query('insert into Tags2Orgs (org_id, tag_id) values (%s, %s);', [org_id,tag_id])
+
+    return Resp.okNoContent()
+
 
 @app.route('/tags/self', methods = ['GET'])
 def get_org_tags():
     req_data = request.values
     token = req_data['token']
     
-    org_id = auth.getOrdIdFromToken(token)
+    org_id = auth.getOrgIdFromToken(token)
 
     if org_id is None:
         return Resp.unauthorized()
 
-    tag_ids = sql.executeGetColumn("select tag_id from Tags2Orgs where org_id=" + token)
+    print('tagssefl',org_id)
+
+    tag_ids = sql.executeGetColumn("select tag_id from Tags2Orgs where org_id=%s", (org_id,))
+
     tags = []
     for tag_id in tag_ids:
-        tags.append(sql.count("select name from Tags where tag_id=" + str(tag_id), []))
+        rv = sql.firstOrNone("select name from Tags where tag_id=%s", (tag_id,))
+        if rv:
+            tags.append(rv)
+
     return Resp.heresYourTags(tags)
     
 
@@ -154,33 +183,53 @@ def add_campaign():
     if org_id is None:
         return Resp.forbidden()
 
-    
+    already_exists = bool(sql.count('select count(*) from Campaigns where org_id=%s and name=%s', [org_id, camp_name]))
 
-    print("Received: " + token)
+    if already_exists:
+        return Resp.conflictResourceExists()
+
+    q = 'insert into Campaigns (name, org_id, qr_horiz, qr_vert, width, height, dest_url) values (%s,%s,%s,%s,%s,%s,%s);'
+    sql.query(q, [camp_name, org_id, qr_horiz, qr_vert, width, height, dest_url])
+
+    # TODO: upload payload to a bucket and then later set the resource_url and thumb_url
+
+    return Resp.okNoContent()
 
 @app.route('/campaigns/list', methods = ['GET'])
 def get_campaigns():
-    token = request.args.get('token')
-    camps = [] # TODO use SQL call to get list
-    resp = []
-    for camp in camps:
-        # TODO load vars into gen_campaign
-        camp_json = gen_campaign(id, name, thumb_url, dest_url)
-        resp.append(camp_json)
-    return jsonify(resp)
+    token = request.values['token']
+
+    org_id = auth.getOrgIdFromToken(token)
+
+    if org_id is None:
+        return Resp.forbidden()
+
+    q = 'select camp_id, name, thumb_url, dest_url from Campaigns where org_id=%s;'
+   
+    response = [gen_campaign(*row) for row in sql.query(q, [org_id])]
+
+    return Resp.heresYourCampaigns(response)
 
 @app.route('/campaigns/flyers', methods = ['GET'])
 def get_campaign_flyers():
-    token = request.args.get('token')
-    camp_id = request.args.get('camp_id')
-    camp_flyers = [] # TODO use SQL call to get list
-    resp = []
-    for flyer in camp_flyers:
-        # TODO load vars into gen_flyer
-        flyer_json = gen_flyer(id, building_name, floor_num, hits)
-        resp.append(flyer_json)
-    return jsonify(resp)
+    req_data = request.values
+    token = req_data['token']
+    camp_id = req_data['camp_id']
 
+    org_id = auth.getOrgIdFromToken(token)
+
+    if org_id is None:
+        return Resp.forbidden()
+
+
+# camp_id = request.args.get('camp_id')
+# camp_flyers = [] # TODO use SQL call to get list
+# resp = []
+# for flyer in camp_flyers:
+    # # TODO load vars into gen_flyer
+    # flyer_json = gen_flyer(id, building_name, floor_num, hits)
+    # resp.append(flyer_json)
+# return jsonify(resp)
 
 #
 # Jobs

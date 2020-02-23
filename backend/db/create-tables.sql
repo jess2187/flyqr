@@ -35,8 +35,12 @@ CREATE TABLE IF NOT EXISTS `Campaigns` (
   `name` VARCHAR(100) NOT NULL,
   `resource_url` VARCHAR(200) NULL,
   `thumb_url` VARCHAR(200) NULL,
-  `dest_url` VARCHAR(200) NULL,
+  `dest_url` VARCHAR(200) NOT NULL,
   `org_id` INT NOT NULL,
+  `qr_horiz` FLOAT NULL, /* only null b/c i dont wanna change the seed file */
+  `qr_vert` FLOAT NULL,
+  `width` FLOAT NULL,
+  `height` FLOAT NULL,   /* </laziness> */
   PRIMARY KEY (`camp_id`),
   CONSTRAINT `fk_Campaigns_Organizations1` FOREIGN KEY (`org_id`) REFERENCES `Organizations` (`org_id`))
 ENGINE = InnoDB;

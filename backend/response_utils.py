@@ -7,6 +7,9 @@ def okJson(obj):
 def conflictAccountExists():
     return jsonify({'error':'Account exists for that email'}), status.HTTP_409_CONFLICT
 
+def conflictResourceExists():
+    return '', status.HTTP_409_CONFLICT
+
 def okNoContent():
     return '', status.HTTP_204_NO_CONTENT
 
@@ -21,3 +24,6 @@ def heresYourToken(token):
 
 def heresYourTags(tags):
     return jsonify({'tags':tags}), status.HTTP_200_OK
+
+def heresYourCampaigns(campaigns):
+    return jsonify({'campaigns':campaigns}), status.HTTP_200_OK
