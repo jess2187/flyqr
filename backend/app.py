@@ -106,8 +106,8 @@ def on_qr_code_scan(code):
 
 @app.route('/tags/list', methods = ['GET'])
 def list_tags():
-    tags = []
-    # TODO return all tags in db
+    tags = sql.executeGetColumn("select name from Tags;")
+    return Resp.heresYourTags(tags)
 
 @app.route('/tags/add', methods = ['POST'])
 def add_tag():
@@ -118,8 +118,20 @@ def add_tag():
 
 @app.route('/tags/self', methods = ['GET'])
 def get_org_tags():
-    token = request.args.get('token')
-    # TODO get org tags associated w/ token
+    req_data = request.values
+    token = req_data['token']
+    
+    org_id = auth.getOrdIdFromToken(token)
+
+    if org_id is None:
+        return Resp.unauthorized()
+
+    tag_ids = sql.executeGetColumn("select tag_id from Tags2Orgs where org_id=" + token)
+    tags = []
+    for tag_id in tag_ids:
+        tags.append(sql.count("select name from Tags where tag_id=" + str(tag_id), []))
+    return Resp.heresYourTags(tags)
+    
 
 #
 # Campaigns

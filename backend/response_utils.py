@@ -18,3 +18,6 @@ def forbidden():
 
 def heresYourToken(token):
     return jsonify({'token':token}), status.HTTP_200_OK
+
+def heresYourTags(tags):
+    return jsonify({'tags':tags}), status.HTTP_200_OK

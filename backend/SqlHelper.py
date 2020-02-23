@@ -19,6 +19,9 @@ class SqlHelper:
         cur.close()
         return rv
 
+    def executeGetColumn(self, statement):
+        return [e[0] for e in self.execute(statement)]
+
     def json(self, preparedQuery, values):
         return jsonify(self.query(preparedQuery, values))
 
