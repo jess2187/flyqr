@@ -10,7 +10,7 @@ import {
 
 const UserAccountScreen = (props) => (
   <SafeAreaView style={styles.container}>
-    <View style ={{alignItems: 'flex-end', paddingRight:10}}> 
+    <View style ={{alignItems: 'flex-end', paddingRight:10}}>
     <Button
           title="Logout"
           style = {{paddingRight: 15, alignSelf: 'flex-end', backgroundColor:'blue'}}
@@ -32,11 +32,15 @@ const UserAccountScreen = (props) => (
       <Text style={{fontSize: 20, color: 'gray'}}>Number of Total Scans</Text>
       <Text style={{fontSize: 25, paddingBottom: 10}}>62</Text>
     </View>
-    
+
   </SafeAreaView>
 )
 
-export default connect()(UserAccountScreen)
+const mapStateToProps = (state) => ({
+  pendingFlyerCode: state.analytics.pending
+})
+
+export default connect(mapStateToProps)(UserAccountScreen)
 
 const styles = StyleSheet.create({
   container: {
@@ -51,18 +55,18 @@ const styles = StyleSheet.create({
     // marginLeft: 5,
     // width: 300,
     alignSelf: 'center',
-    paddingTop:100, 
-    // backgroundColor: 'powderblue', 
-    // borderRadius: 6, 
+    paddingTop:100,
+    // backgroundColor: 'powderblue',
+    // borderRadius: 6,
     // alignItems: 'center',
-    
+
 
   },
   cardContent: {
-    //  width: 300, 
+    //  width: 300,
     //  height: 650,
     // backgroundColor: 'blue'
-    // padding: 50, 
+    // padding: 50,
     // alignItems: 'center',
   }
 });

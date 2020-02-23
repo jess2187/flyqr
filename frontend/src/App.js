@@ -1,11 +1,12 @@
 import * as React from 'react';
-import { Platform, StatusBar, StyleSheet, View } from 'react-native';
+import { Platform, StatusBar, StyleSheet, View, Linking } from 'react-native';
 import { registerRootComponent, SplashScreen } from 'expo';
 import { Ionicons } from '@expo/vector-icons';
 import { NavigationContainer } from '@react-navigation/native';
 import AuthEnforcedNavigator from './AuthEnforcedNavigator';
 import { Provider } from 'react-redux'
 import store from './store'
+import { handleLinkIntoApp } from './linkHandling'
 
 const App = (props) => {
   const [isLoadingComplete, setLoadingComplete] = React.useState(false);
@@ -27,6 +28,8 @@ const App = (props) => {
     }
 
     loadResourcesAndDataAsync();
+
+    Linking.addEventListener('url', handleLinkIntoApp)
   }, []);
 
   if (!isLoadingComplete && !props.skipLoadingScreen) {
