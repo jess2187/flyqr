@@ -1,2 +1,3 @@
 backend/config
+backend/config.py
 backend/__pycache__/*
