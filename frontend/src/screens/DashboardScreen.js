@@ -12,8 +12,22 @@ import {
 import Carousel from 'react-native-snap-carousel'
 import * as API from '../api'
 
+const Metrics = ({ bestBuilding, totalHits }) => (
+  <View>
+    <Text>{bestBuilding}</Text>
+    <Text>Top Building</Text>
+    <Text>{totalHits}</Text>
+    <Text>Total Hits</Text>
+  </View>
+)
+
 const Card = ({ index, item }) => {
-  const { dest_url, id, name, thumb_url } = item
+  let { dest_url, id, name, thumb_url } = item
+
+  if (!thumb_url) {
+    // aww...
+    thumb_url = 'http://placekitten.com/200/' + (400 + index * 4)
+  }
 
   return (
     <View style={styles.card}>
@@ -21,10 +35,10 @@ const Card = ({ index, item }) => {
       <View style={styles.cardContent}>
         <Image
           style={{width: 300, height: 400, borderTopLeftRadius: 6, borderTopRightRadius: 6 }}
-          source={{uri: 'http://placekitten.com/200/'+Math.floor(500*Math.random())}}/>
-        <Text style={{fontSize: 30, padding: 15}}>Flyer  #{id}</Text>
-        <Text style={{fontSize: 20, paddingLeft: 15}}>{name}</Text>
-        <Text style={{fontSize: 20, paddingLeft: 15}}>{dest_url || '?'}</Text>
+          source={{uri: thumb_url}}/>
+        <Text style={{fontSize: 30, padding: 15}}>{name}</Text>
+        <Text style={{fontSize: 20, paddingLeft: 15, color: 'gray'}}>({dest_url})</Text>
+        <Metrics bestBuilding="Gemmil Math" totalHits={420} />
       </View>
       </TouchableHighlight>
     </View>
@@ -51,6 +65,12 @@ const DashboardScreen = ({ token, dataIsStale, campaigns }) => {
   useEffect(() => {
     if (dataIsStale) {
       (async () => (await API.getMyCampaigns(token)))()
+    }
+
+    for (let c of campaigns) {
+      if (!c.flyers) {
+        (async () => (await API.getFlyersForCampaign(token, c.camp_id)))()
+      }
     }
   })
 

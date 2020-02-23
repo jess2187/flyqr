@@ -84,6 +84,10 @@ export const getMyCampaigns = async (token) => {
 // GET /campaigns/flyers
 export const getFlyersForCampaign = (token, camp_id) => {
   const res = send('GET', '/campaigns/flyers', { token, camp_id })
+
+  if (res.status == 200) {
+    store.dispatch({ type: 'campaigns.getFlyers', camp_id, ...res.body })
+  }
 }
 
 // POST /jobs/new
