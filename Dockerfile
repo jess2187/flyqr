@@ -1,15 +1,17 @@
-FROM ubuntu:18.04
+FROM python:3
 
 RUN mkdir /app
 
 COPY /backend /app
 
-RUN apt-get update 
+RUN ls /app
 
-RUN apt-get install python3-pip
-
-RUN pip3 install -r /app/requirements.txt
+WORKDIR /app
 
 EXPOSE 5000
 
-CMD ["python3","/app/app.py"]
+RUN pip3 install -r requirements.txt
+
+ENTRYPOINT ["python3"]
+
+CMD ["app.py"]
