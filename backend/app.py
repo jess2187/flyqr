@@ -5,9 +5,9 @@ import config
 from objects import gen_organization, gen_campaign, gen_flyer
 from SqlHelper import SqlHelper
 from AuthUtils import AuthUtils
-from Analytics import Analytics
 from flask_bcrypt import Bcrypt
 import response_utils as Resp
+from FlyerDAO import get_flyer_dao_from_qr_code
 
 app = Flask(__name__)
 
@@ -24,18 +24,12 @@ celery.conf.update(app.config)
 sql = SqlHelper(app)
 bcrypt = Bcrypt(app)
 auth = AuthUtils(sql, bcrypt)
-analytics = Analytics(sql)
 
 URL_INTO_EXPO_APP = 'exp://exp.host/@evanram/flyqr?code=%s'
 
 @app.route('/ping')
 def ping():
     return "pong"
-
-@app.route('/tables', methods = ['GET'])
-def orgs():
-    rv = sql.execute('show tables;')
-    return Resp.okJson(rv)
 
 #
 # Authentication
@@ -61,10 +55,10 @@ def login_org():
     email = req_data['email'].lower()
     password = req_data['password']
 
-    token = auth.checkUser(email, password)
-
-    if not token:
+    if not auth.checkUser(email, password):
         return Resp.unauthorized()
+
+    token = auth.createTokenForOrgGivenEmail(email)
 
     return Resp.heresYourToken(token)
 
@@ -72,8 +66,8 @@ def login_org():
 def logout_org(): # does not logout everywhere
     req_data = request.values
     token = req_data['token']
-    
-    org_id = auth.getOrdIdFromToken(token)
+
+    org_id = auth.getOrgIdFromToken(token)
 
     if org_id is None:
         return Resp.unauthorized()
@@ -88,8 +82,11 @@ def logout_org(): # does not logout everywhere
 
 @app.route('/x/<code>', methods = ['GET'])
 def on_qr_code_scan(code):
-    flyer = analytics.get_flyer_from_code(code)
-    
+    flyer = get_flyer_dao_from_qr_code(sql, code)
+
+    if flyer is None:
+        return Resp.notFound(f'{code} is not a known flyer')
+
     if not flyer.is_registered():
         # Temp redirect into mobile app, so user can register it
         return redirect(URL_INTO_EXPO_APP % code, code=307)
@@ -125,7 +122,7 @@ def add_tag():
 
     if not tag_exists:
         rv = sql.query('insert into Tags (name) values (%s);', [tag])
-   
+
     tag_id = sql.firstOrNone('select (tag_id) from Tags where name=%s;', [tag])
 
     if not tag_id:
@@ -143,7 +140,7 @@ def add_tag():
 def get_org_tags():
     req_data = request.values
     token = req_data['token']
-    
+
     org_id = auth.getOrgIdFromToken(token)
 
     if org_id is None:
@@ -160,7 +157,7 @@ def get_org_tags():
             tags.append(rv)
 
     return Resp.heresYourTags(tags)
-    
+
 
 #
 # Campaigns
@@ -178,7 +175,7 @@ def add_campaign():
     camp_name = req_data['camp_name'] # string
     dest_url = req_data['dest_url'] # string
 
-    org_id = auth.getOrgIdFromToken(token) 
+    org_id = auth.getOrgIdFromToken(token)
 
     if org_id is None:
         return Resp.forbidden()
@@ -192,6 +189,7 @@ def add_campaign():
     sql.query(q, [camp_name, org_id, qr_horiz, qr_vert, width, height, dest_url])
 
     # TODO: upload payload to a bucket and then later set the resource_url and thumb_url
+    # - need to be able to upload... really we should be able to do this locally
 
     return Resp.okNoContent()
 
@@ -205,7 +203,7 @@ def get_campaigns():
         return Resp.forbidden()
 
     q = 'select camp_id, name, thumb_url, dest_url from Campaigns where org_id=%s;'
-   
+
     response = [gen_campaign(*row) for row in sql.query(q, [org_id])]
 
     return Resp.heresYourCampaigns(response)
@@ -221,18 +219,33 @@ def get_campaign_flyers():
     if org_id is None:
         return Resp.forbidden()
 
+    q = 'select flyer_id, floor_num, hits, building_id from Flyers where org_id=%s and camp_id=%s;'
+    resp = sql.query(q, [org_id, camp_id])
 
-# camp_id = request.args.get('camp_id')
-# camp_flyers = [] # TODO use SQL call to get list
-# resp = []
-# for flyer in camp_flyers:
-    # # TODO load vars into gen_flyer
-    # flyer_json = gen_flyer(id, building_name, floor_num, hits)
-    # resp.append(flyer_json)
-# return jsonify(resp)
+    flyers = []
+
+    for row in resp:
+        flyer_id = row[0]
+        floor_num = row[1]
+        hits = row[2]
+        building_id = row[3]
+
+        building_q = 'select name from Buildings where building_id=%s limit 1;'
+        building_resp = sql.query(building_q, [building_id])
+
+        if not building_resp:
+            raise 'oh no'
+
+        building_name = building_resp[0][0]
+
+        serialized = gen_flyer(flyer_id, building_name, floor_num, hits)
+        flyers.append(serialized)
+
+    return Resp.heresYourFlyers(flyers)
 
 #
 # Jobs
+# TODO: pair on this
 #
 
 @app.route('/jobs/new', methods = ['POST'])

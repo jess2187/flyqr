@@ -27,3 +27,9 @@ def heresYourTags(tags):
 
 def heresYourCampaigns(campaigns):
     return jsonify({'campaigns':campaigns}), status.HTTP_200_OK
+
+def heresYourFlyers(flyers):
+    return jsonify({'flyers':flyers}), status.HTTP_200_OK
+
+def notFound(message):
+    return jsonify({'error':message}), status.HTTP_404_NOT_FOUND

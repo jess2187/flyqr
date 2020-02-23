@@ -1,5 +1,5 @@
 from SqlHelper import SqlHelper
-import base64
+from secrets import token_hex
 
 class AuthUtils:
     def __init__(self, sql, bcrypt):
@@ -11,37 +11,43 @@ class AuthUtils:
         return self.sql.count(q, (email,)) != 0
 
     def createUser(self, name, email, password):
-        bcrypted_pass = self.bcrypt.generate_password_hash(password)
-        encoded_pass = str(base64.b64encode(bcrypted_pass), 'utf-8')
+        password = password.encode('utf-8')
+        db_password = self.bcrypt.generate_password_hash(password).decode('utf-8')
 
-        q = 'insert into Organizations(name, email, password) values(%s,%s,%s);'
-        vs = (name, email, encoded_pass)
-        json = self.sql.json(q, vs)
-
-        print('createUser',json)
-        # TODO Finish this method
+        q = 'insert into Organizations (name, email, password) values (%s, %s, %s);'
+        self.sql.query(q, [name, email, db_password])
 
     def checkUser(self, email, password):
         q = 'select (password) from Organizations where email=%s;'
-        vs = (email,)
-        resp = self.sql.json(q, vs)
+        db_password = self.sql.firstOrNone(q, [email])
 
-        print(resp)
+        if not db_password:
+            return False
 
-        # TODO return true if the bcrypted
-        return False
+        password = password.encode('utf-8')
+        return self.bcrypt.check_password_hash(db_password, password)
+
+    def createTokenForOrgGivenEmail(self, email):
+        token = token_hex(40) # 40 byte random auth token
+        
+        org_id = self._getOrgIdFromEmail(email)
+
+        if org_id is None:
+            raise 'unlucky :('
+
+        q = 'insert into AuthTokens (token, org_id) values (%s, %s);'
+        self.sql.query(q, [token, org_id])
+
+        return token
+
+    def _getOrgIdFromEmail(self, email):
+        q = 'select org_id from Organizations where email=%s;'
+        return self.sql.firstOrNone(q, [email])
 
     def getOrgIdFromToken(self, token):
-        q = 'select (org_id) from AuthTokens where token=%s;'
-        vs = (token,)
-        resp = self.sql.firstOrNone(q, vs)
-
-        if not resp:
-            return None
-
-        return resp
+        q = 'select org_id from AuthTokens where token=%s;'
+        return self.sql.firstOrNone(q, [token])
 
     def deleteToken(self, token):
         q = 'delete from AuthTokens where token=%s;'
-        vs = (token,)
-        self.sql.query(q, vs)
+        self.sql.query(q, [token])

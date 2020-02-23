@@ -31,11 +31,12 @@ insert into Tags2Orgs (org_id, tag_id) values
   (3, 4), (3, 6), (3, 2),              /* Truck Club */
   (4, 7), (4, 2);                      /* RDJr Fan Club */
 
-/* b/c I'm lazy, all flyers are for Gaming Club in Duane. */
+/* b/c I'm lazy, all flyers are for Gaming Club in Duane (+ 1 unreg'd poster). */
 insert into Flyers (flyer_id, floor_num, code, hits, camp_id, org_id, building_id) values
-  (1,  1, 'f1r5tc0d3', 53, 1, 1, 1),
-  (2,  2, 's3c0nd0n3', 14, 1, 1, 1),
-  (3, -1, 'th1rdc0d3',  2, 1, 1, 1);
+  (1,    1, 'f1r5tc0d3', 53, 1, 1,    1),
+  (2,    2, 's3c0nd0n3', 14, 1, 1,    1),
+  (3,   -1, 'th1rdc0d3',  2, 1, 1,    1),
+  (4, NULL, 'unregd',     0, 1, 1, NULL);
 
 insert into AuthTokens (org_id, token) values
   (1, 'sup3rs3cur34utht0k3n'); /* Log into Gaming Club with this token */
