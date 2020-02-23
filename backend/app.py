@@ -36,19 +36,23 @@ def orgs():
 #
 @app.route('/auth/register', methods = ['POST'])
 def register_org():
-    email = ""
-    password = ""
+    req_data = request.get_json()
+    email = req_data['email']
+    password = req_data['password']
     # TODO
 
 @app.route('/auth/login', methods = ['POST'])
 def login_org():
-    email = ""
-    password = ""
+    req_data = request.get_json()
+    email = req_data['email']
+    password = req_data['password']
+    print(email, password)
     # TODO
 
 @app.route('/auth/logout', methods = ['POST'])
 def logout_org():
-    token = ""
+    req_data = request.get_json()
+    token = req_data['token']
     #TODO
 
 #
