@@ -1,8 +1,7 @@
 import { createStore, combineReducers } from 'redux'
 
 const preloadedState = {
-  auth: {
-  },
+  auth: {},
   campaigns: [],
   analytics: {},
 }
@@ -11,6 +10,8 @@ const auth = (state = {}, action) => {
   switch (action.type) {
     case 'auth.login':
       return { ...state, email: action.email, token: action.token }
+    case 'auth.logout':
+      return { ...state, email: null, token: null }
   }
 
   return state

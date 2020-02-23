@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Button
 } from 'react-native'
+import * as API from '../api'
 
 const UserAccountScreen = (props) => (
   <SafeAreaView style={styles.container}>
@@ -14,7 +15,8 @@ const UserAccountScreen = (props) => (
     <Button
           title="Logout"
           style = {{paddingRight: 15, alignSelf: 'flex-end', backgroundColor:'blue'}}
-          // onPress={() => Alert.alert('Simple Button pressed')}
+          onPress={async () => await API.logout()}
+      
         />
     </View>
     <View style={styles.info}>
