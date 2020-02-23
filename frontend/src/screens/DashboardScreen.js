@@ -29,7 +29,7 @@ for (let i = 0; i < 100; i++) {
 
 const Card = ({ index }) => {
   return (
-    
+
     <View style={styles.card}>
       <TouchableHighlight>
       <View style={styles.cardContent}>
@@ -42,7 +42,7 @@ const Card = ({ index }) => {
       </View>
       </TouchableHighlight>
     </View>
-    
+
   )
 }
 
@@ -55,7 +55,7 @@ const CardCarousel = (props) => {
   const renderCard = Card
 
   return (
-    
+
       <Carousel
         ref={carouselRef}
         data={cards}
@@ -71,7 +71,7 @@ const DashboardScreen = (props) => (
     <Text >CU Game Dev Club
     </Text>
     <CardCarousel />
-    
+
   </SafeAreaView>
 )
 
@@ -92,18 +92,18 @@ const styles = StyleSheet.create({
     margin: 50,
     width: 300,
     alignSelf: 'center',
-    // padding:50, 
-    backgroundColor: 'white', 
-    borderRadius: 6, 
-    shadowOffset: {width: 3, height: 3}, 
-    shadowColor: 'black', 
+    // padding:50,
+    backgroundColor: 'white',
+    borderRadius: 6,
+    shadowOffset: {width: 3, height: 3},
+    shadowColor: 'black',
     shadowOpacity: 0.3
   },
   cardContent: {
-    //  width: 300, 
+    //  width: 300,
     //  height: 650,
     // backgroundColor: 'blue'
-    // padding: 50, 
+    // padding: 50,
     // alignItems: 'center',
   }
 });
