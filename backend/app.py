@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request
 from flask_mysqldb import MySQL
+from celery import Celery
 import config
 from objects import gen_organization, gen_campaign, gen_flyer
 
@@ -9,6 +10,12 @@ app.config['MYSQL_HOST'] = config.host
 app.config['MYSQL_USER'] = config.user
 app.config['MYSQL_PASSWORD'] = config.passwd
 app.config['MYSQL_DB'] = config.db
+app.config['CELERY_BROKER_URL'] = config.CELERY_BROKER_URL
+app.config['CELERY_RESULT_BACKEND'] = config.CELERY_RESULT_BACKEND
+
+celery = Celery(app.name, broker=app.config["CELERY_BROKER_URL"])
+celery.conf.update(app.config)
+
 mysql = MySQL(app)
 
 @app.route('/ping')
@@ -50,6 +57,7 @@ def logout_org():
 
 @app.route('/x/<flyer_code>', methods = ['GET'])
 def addHit(flyer_code):
+    hit = 1
     # TODO add hit to DB
     # TODO redirect
 
@@ -59,6 +67,7 @@ def addHit(flyer_code):
 
 @app.route('/tags/list', methods = ['GET'])
 def list_tags():
+    tags = []
     # TODO return all tags in db
 
 @app.route('/tags/add', methods = ['POST'])
@@ -124,12 +133,25 @@ def add_pdf_gen():
     num = request.args.get('n')
     camp_id = request.args.get('camp_id')
     # TODO add to jobs
+    task = gen_pdf.apply_async()
+    return jsonify({}), 202, {'job_id': task.id}
+
+@celery.task
+def gen_pdf():
+    print("Background task ran.")
+    return {"result": "task fin"}
 
 @app.route('/jobs/status', methods = ['GET'])
 def get_job_status():
     token = request.args.get('token')
     job_id = request.args.get('job_id')
-    # TODO SQL and return stuff
+    task = gen_pdf.AsyncResult(job_id)
+    if task.state == 'PENDING':
+        return jsonify({}), 202
+    elif task.state != 'FAILURE':
+        return jsonify(task.info.get('result', 0)), 200
+    else:
+        return jsonify({}), 403
 
 
 if __name__ == '__main__':
