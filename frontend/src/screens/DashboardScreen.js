@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { connect } from 'react-redux'
 import {
   SafeAreaView,
@@ -10,75 +10,58 @@ import {
   TouchableHighlight
 } from 'react-native'
 import Carousel from 'react-native-snap-carousel'
+import * as API from '../api'
 
-const cards = []
-for (let i = 0; i < 100; i++) {
-  cards.push({})
-}
+const Card = ({ index, item }) => {
+  const { dest_url, id, name, thumb_url } = item
 
-// const Touchables = ({}) =>{
-// // export default class Touchables extends Component {
-//   _onPressButton() (
-//     alert('You tapped the button!')
-//   );
-
-//   _onLongPressButton() (
-//     alert('You long-pressed the button!')
-//   }
-// }
-
-const Card = ({ index }) => {
   return (
-
     <View style={styles.card}>
       <TouchableHighlight>
       <View style={styles.cardContent}>
         <Image
           style={{width: 300, height: 400, borderTopLeftRadius: 6, borderTopRightRadius: 6 }}
-          source={{uri: 'https://3.bp.blogspot.com/-9Fj2BdwXHt8/WnC4baujJHI/AAAAAAAAANk/ogxyp4n0disNkFq59YrOO1lMfiYEXrFRwCK4BGAYYCw/s1600/IMG_5999.jpg'}}/>
-        <Text style={{fontSize: 30, padding: 15}}>Flyer  #{index}</Text>
-        <Text style={{fontSize: 20, paddingLeft: 15}}>Number of locations: # </Text>
-        <Text style={{fontSize: 20, paddingLeft: 15}}>Number of scans: # </Text>
+          source={{uri: 'http://placekitten.com/200/'+Math.floor(500*Math.random())}}/>
+        <Text style={{fontSize: 30, padding: 15}}>Flyer  #{id}</Text>
+        <Text style={{fontSize: 20, paddingLeft: 15}}>{name}</Text>
+        <Text style={{fontSize: 20, paddingLeft: 15}}>{dest_url || '?'}</Text>
       </View>
       </TouchableHighlight>
     </View>
-
   )
 }
-
-
 
 const { width: vpWidth, height: vpHeight } = Dimensions.get('window')
 
-const CardCarousel = (props) => {
-  const carouselRef = useRef(null)
-  const renderCard = Card
+const CardCarousel = ({ campaigns }) => {
+  const carouselRef = useRef()
 
   return (
-
-      <Carousel
-        ref={carouselRef}
-        data={cards}
-        renderItem={renderCard}
-        sliderWidth={vpWidth}
-        itemWidth={vpWidth}
-      />
+    <Carousel
+      ref={carouselRef}
+      data={campaigns}
+      renderItem={Card}
+      sliderWidth={vpWidth}
+      itemWidth={vpWidth}
+    />
   )
 }
 
-const DashboardScreen = (props) => (
-  <SafeAreaView style={styles.container}>
-    <Text >CU Game Dev Club
-    </Text>
-    <CardCarousel />
+const DashboardScreen = ({ token, dataIsStale, campaigns }) => {
+  useEffect(() => {
+    if (dataIsStale) {
+      (async () => (await API.getMyCampaigns(token)))()
+    }
+  })
 
-  </SafeAreaView>
-)
-
-
-
-export default connect()(DashboardScreen)
-
+  return (
+    <SafeAreaView style={styles.container}>
+      <Text>CU Game Dev Club
+      </Text>
+      <CardCarousel campaigns={campaigns} />
+    </SafeAreaView>
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -107,3 +90,15 @@ const styles = StyleSheet.create({
     // alignItems: 'center',
   }
 });
+
+const mapStateToProps = (state) => ({
+  dataIsStale: true, // TODO: we need a good time and reason for when to update the stale data
+  campaigns: state.campaigns,
+  token: state.auth.token,
+})
+
+const mapDispatchToProps = (dispatch) => ({
+
+})
+
+export default connect(mapStateToProps, mapDispatchToProps)(DashboardScreen)

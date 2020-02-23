@@ -73,8 +73,12 @@ export const createCampaign = (token, payload, qr_horiz, qr_vert, width, height,
 }
 
 // GET /campaigns/list
-export const getMyCampaigns = (token) => {
-  const res = send('GET', '/campaigns/new', { token })
+export const getMyCampaigns = async (token) => {
+  const res = await send('GET', '/campaigns/list', { token })
+
+  if (res.status == 200) {
+    store.dispatch({ type: 'campaigns.overwrite', campaigns: res.body.campaigns })
+  }
 }
 
 // GET /campaigns/flyers
