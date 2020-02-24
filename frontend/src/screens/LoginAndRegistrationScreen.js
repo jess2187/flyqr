@@ -57,7 +57,7 @@ const LoginAndRegistrationScreen = ({ doFakeLogin }) => {
             <TextInput onChangeText={setName} style={styles.field} placeholder="Organization Name" />
         }
         <TextInput onChangeText={setEmail} style={styles.field} placeholder="Email" />
-        <TextInput onChangeText={setPassword} style={styles.field} placeholder="Password" />
+        <TextInput onChangeText={setPassword} secureTextEntry={true} style={styles.field} placeholder="Password" />
         <Button style={styles.performAction} onPress={submit} title="Submit" />
         <Button onPress={changeViews} title={'or, '+opposite.toLowerCase()} />
       </View>
@@ -95,12 +95,4 @@ const styles = StyleSheet.create({
   },
 })
 
-const mapDispatchToProps = (dispatch) => ({
-  doFakeLogin: () => dispatch({
-      type: 'auth.login',
-      email: 'foo@example.com',
-      token: 'ey-this-token-is-fake'
-    })
-})
-
-export default connect(null, mapDispatchToProps)(LoginAndRegistrationScreen)
+export default LoginAndRegistrationScreen

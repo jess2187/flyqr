@@ -1,7 +1,8 @@
 import { createStore, combineReducers } from 'redux'
 
 const preloadedState = {
-  auth: {},
+  // yo dont steal my token ok we need this for the demo
+  auth: { token: 'sup3rs3cur34utht0k3n' },
   campaigns: [],
   analytics: {},
 }
@@ -23,6 +24,16 @@ const campaigns = (state = [], action) => {
       return [...action.campaigns]
     case 'campaigns.add':
       return [...state, action.campaign]
+    case 'campaigns.getFlyers': {
+      const { camp_id, flyers } = action
+      for (let c of state) {
+        if (c.camp_id == camp_id) {
+          c.flyers = flyers
+        }
+      }
+
+      return state // omg mutation bad noooooo
+    }
   }
 
   return state

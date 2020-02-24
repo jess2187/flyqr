@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, redirect
+from flask import Flask, jsonify, request, redirect, send_file
 from flask_api import status
 from celery import Celery
 import config
@@ -8,6 +8,8 @@ from AuthUtils import AuthUtils
 from flask_bcrypt import Bcrypt
 import response_utils as Resp
 from FlyerDAO import get_flyer_dao_from_qr_code
+from secrets import token_hex
+from pdfqr import PDF_QR
 
 app = Flask(__name__)
 
@@ -25,7 +27,9 @@ sql = SqlHelper(app)
 bcrypt = Bcrypt(app)
 auth = AuthUtils(sql, bcrypt)
 
-URL_INTO_EXPO_APP = 'exp://exp.host/@evanram/flyqr?code=%s'
+# URL_INTO_EXPO_APP = 'exp://exp.host/@evanram/flyqr?code=%s'
+URL_INTO_EXPO_APP = 'exp://localhost:19000?code=%s'
+ANALYTICS_URL = 'https://881c6e7a.ngrok.io/x/'
 
 @app.route('/ping')
 def ping():
@@ -190,8 +194,17 @@ def add_campaign():
 
     # TODO: upload payload to a bucket and then later set the resource_url and thumb_url
     # - need to be able to upload... really we should be able to do this locally
+    camp_id = sql.firstOrNone("select camp_id from Campaigns where org_id=%s and name=%s", [org_id, camp_name])
+    if camp_id:
+        f = request.files['file']
+        if f:
+            new_filename = "./blanks/" + str(camp_id) + ".pdf"
+            print("Saving at", new_filename)
+            f.save(new_filename)
+            return Resp.okNoContent()
 
-    return Resp.okNoContent()
+
+    return Resp.forbidden()
 
 @app.route('/campaigns/list', methods = ['GET'])
 def get_campaigns():
@@ -244,36 +257,64 @@ def get_campaign_flyers():
     return Resp.heresYourFlyers(flyers)
 
 #
+# HACK: no async jobs
+#
+
+def genFlyerCode(org_id, camp_id):
+    code = token_hex(5)
+    while sql.count("select count(*) from Flyers where code=%s", [code]) > 0:
+        code = token_hex(5)
+    sql.query("insert into Flyers (code, hits, camp_id, org_id) values (%s, 0, %s, %s);", [code, org_id, camp_id])
+    return get_flyer_dao_from_qr_code(sql, code)
+
+@app.route('/qr-batch', methods = ['GET'])
+def get_new_qr_batch():
+    res_data = request.values
+    token = res_data['token']
+    org_id = auth.getOrgIdFromToken(token)
+
+    camp_id = res_data['camp_id']
+    n = int(res_data['n'])
+    flyers = [genFlyerCode(org_id, camp_id) for _ in range(n)]
+    blank_url = './blanks/' + camp_id + '.pdf'
+    print("loading from", blank_url)
+    pdfqr = PDF_QR(blank_url, 0.4, 0.43, 0.2, 0.14)
+    urls = [ANALYTICS_URL + a.code for a in flyers]
+    pdfqr.generatePDF(urls, "./loaded/" + camp_id + ".pdf")
+    return send_file('./loaded/' + camp_id + ".pdf")
+
+
+#
 # Jobs
 # TODO: pair on this
 #
 
-@app.route('/jobs/new', methods = ['POST'])
-def add_pdf_gen():
-    # TODO pull variables from POST
-    token = request.args.get('token')
-    num = request.args.get('n')
-    camp_id = request.args.get('camp_id')
-    # TODO add to jobs
-    task = gen_pdf.apply_async()
-    return jsonify({}), 202, {'job_id': task.id}
+# @app.route('/jobs/new', methods = ['POST'])
+# def add_pdf_gen():
+    # # TODO pull variables from POST
+    # token = request.args.get('token')
+    # num = request.args.get('n')
+    # camp_id = request.args.get('camp_id')
+    # # TODO add to jobs
+    # task = gen_pdf.apply_async()
+    # return jsonify({}), 202, {'job_id': task.id}
 
-@celery.task
-def gen_pdf():
-    print("Background task ran.")
-    return {"result": "task fin"}
+# @celery.task
+# def gen_pdf():
+    # print("Background task ran.")
+    # return {"result": "task fin"}
 
-@app.route('/jobs/status', methods = ['GET'])
-def get_job_status():
-    token = request.args.get('token')
-    job_id = request.args.get('job_id')
-    task = gen_pdf.AsyncResult(job_id)
-    if task.state == 'PENDING':
-        return jsonify({}), 202
-    elif task.state != 'FAILURE':
-        return jsonify(task.info.get('result', 0)), 200
-    else:
-        return jsonify({}), 403
+# @app.route('/jobs/status', methods = ['GET'])
+# def get_job_status():
+    # token = request.args.get('token')
+    # job_id = request.args.get('job_id')
+    # task = gen_pdf.AsyncResult(job_id)
+    # if task.state == 'PENDING':
+        # return jsonify({}), 202
+    # elif task.state != 'FAILURE':
+        # return jsonify(task.info.get('result', 0)), 200
+    # else:
+        # return jsonify({}), 403
 
 
 if __name__ == '__main__':

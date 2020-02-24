@@ -10,16 +10,17 @@ def get_flyer_dao_from_qr_code(sql, code):
     if flyer_id is None:
        return None
 
-    flyer = FlyerDAO(sql, flyer_id)
+    flyer = FlyerDAO(sql, flyer_id, code)
     _flyers[code] = flyer
     return flyer
 
 class FlyerDAO:
-    def __init__(self, sql, flyer_id):
+    def __init__(self, sql, flyer_id, code = None):
         self.sql = sql
         self.flyer_id = flyer_id
         self.cached_is_registered = None
         self.cached_redirect_url = None
+        self.code = code
 
     def is_registered(self):
         # since we can never unregister a poster, this is ok
