@@ -1,0 +1,5 @@
+config/**/*
+config.py
+__pycache__/**/*
+blanks/**/*
+loaded/**/*

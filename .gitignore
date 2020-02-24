@@ -1,5 +1,2 @@
-backend/config
-backend/config.py
-backend/__pycache__/*
-backend/blanks/*
-backend/loaded/*
+*.swp
+*.bak
