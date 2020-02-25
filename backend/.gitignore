@@ -1,5 +1,11 @@
-config/**/*
-config.py
-__pycache__/**/*
-blanks/**/*
-loaded/**/*
+app/__pycache__/**/*
+
+# Secrets and the like
+app/config/**/*
+app/config.py
+
+# 'blanks' and 'loaded' are (or __were__ if in future and I forget to edit this)
+# folders for storing user generated content, before actual S3-like solution
+# exists.
+app/blanks/**/*
+app/loaded/**/*
