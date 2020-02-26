@@ -1,4 +1,4 @@
-import store from './store'
+import Store from './Store'
 
 const API_URL = 'https://881c6e7a.ngrok.io' //'https://flyqr.xyz'
 
@@ -42,7 +42,7 @@ export const login = async (email, password) => {
   const res = await send('POST', '/auth/login', { email, password })
 
   if (res.status == 200) {
-    store.dispatch({ type: 'auth.login', email, ...res.body })
+    Store.dispatch({ type: 'auth.login', email, ...res.body })
   } else {
     alert('Bad login.')
   }
@@ -53,7 +53,7 @@ export const logout = async (token) => {
   const res = await send('POST', '/auth/logout', { token })
 
   if (res.status == 204) {
-    store.dispatch({ type: 'auth.logout' })
+    Store.dispatch({ type: 'auth.logout' })
   }
 }
 
@@ -77,7 +77,7 @@ export const getMyCampaigns = async (token) => {
   const res = await send('GET', '/campaigns/list', { token })
 
   if (res.status == 200) {
-    store.dispatch({ type: 'campaigns.overwrite', campaigns: res.body.campaigns })
+    Store.dispatch({ type: 'campaigns.overwrite', campaigns: res.body.campaigns })
   }
 }
 
@@ -86,7 +86,7 @@ export const getFlyersForCampaign = (token, camp_id) => {
   const res = send('GET', '/campaigns/flyers', { token, camp_id })
 
   if (res.status == 200) {
-    store.dispatch({ type: 'campaigns.getFlyers', camp_id, ...res.body })
+    Store.dispatch({ type: 'campaigns.getFlyers', camp_id, ...res.body })
   }
 }
 
