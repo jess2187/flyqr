@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS Users (
   name      VARCHAR(100) NOT NULL,
   email     VARCHAR(100) NOT NULL,
   bcrypt    CHAR(100)    NOT NULL UNIQUE,
-  
+
   PRIMARY KEY (user_id)
 );
 
@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS Campaigns (
 
 CREATE TABLE IF NOT EXISTS Tags (
   tag_id  INT         NOT NULL AUTO_INCREMENT,
-  name    VARCHAR(60) NOT NULL,
+  name    VARCHAR(60) NOT NULL UNIQUE,
 
   PRIMARY KEY (tag_id)
 );
@@ -93,12 +93,11 @@ CREATE TABLE IF NOT EXISTS Buildings (
 );
 
 CREATE TABLE IF NOT EXISTS Flyers (
-  code         CHAR(20) NOT NULL,
+  code         CHAR(20) NOT NULL, -- code can _never_ change since it's printed on paper
   camp_id      INT      NOT NULL,
-  org_id       INT      NOT NULL,
-  hits         INT      NOT NULL,
+  hits         INT      NOT NULL DEFAULT 0,
+  floor_num    INT      NOT NULL DEFAULT 0,
   building_id  INT          NULL,
-  floor_num    INT          NULL,
 
   PRIMARY KEY (code),
 
