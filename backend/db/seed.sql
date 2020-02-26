@@ -1,4 +1,4 @@
-insert into Organizations (org_id, name, email, password) values
+insert into Organizations (org_id, name, email, bcrypt) values
   (1, 'Gaming Club',                   'gaming@colorado.edu',          '$2b$12$v57YlnboMP2g02AjqspFXu.TMuRmreSIj/UdthPesPJtKI8S1h2s.'), /* 'password' */
   (2, 'Competitive Programming Club',  'comp.prog@colorado.edu',       '$2b$12$653KjtwsuYIlARcCK8GWj.4aLHT0/ZF41b5xfn/xdCFVQoCcObzGO'), /* 'different-password' */
   (3, 'Truck Club',                    'walter.clements@gmail.com',    '$2b$12$L5nPCrO3eMvz4fn/QqnUzeeObiPeeBSeaoxU47vwwouLwMD5Vwule'), /* 'mostertruck' */
