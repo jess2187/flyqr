@@ -1,4 +1,4 @@
-app/__pycache__/**/*
+app/src/__pycache__/**/*
 
 # Secrets and the like
 app/config/**/*
