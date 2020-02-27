@@ -1,6 +1,5 @@
 from flask import Flask, jsonify, request, redirect, send_file
 from flask_api import status
-from celery import Celery
 import config
 from objects import gen_organization, gen_campaign, gen_flyer
 from SqlHelper import SqlHelper

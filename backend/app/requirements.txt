@@ -3,4 +3,5 @@ Flask-JSON
 flask-mysqldb
 Flask-API
 Flask-Bcrypt
-celery
+rq
+redis
